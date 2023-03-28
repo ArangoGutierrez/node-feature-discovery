@@ -409,8 +409,9 @@ func (m *nfdMaster) updateMasterNode() error {
 // into extended resources. This function also handles proper namespacing of
 // labels and ERs, i.e. adds the possibly missing default namespace for labels
 // arriving through the gRPC API.
-func (m *nfdMaster) filterFeatureLabels(labels Labels) (Labels, ExtendedResources) {
+func (m *nfdMaster) filterFeatureLabels(labels Labels, extendedResources []string) (Labels, ExtendedResources) {
 	outLabels := Labels{}
+	outExtendedResources := ExtendedResources{}
 
 	for label, value := range labels {
 		// Add possibly missing default ns
@@ -438,8 +439,8 @@ func (m *nfdMaster) filterFeatureLabels(labels Labels) (Labels, ExtendedResource
 		outLabels[label] = value
 	}
 
-	// Remove labels which are intended to be extended resources
-	extendedResources := ExtendedResources{}
+	// via -resource-labels
+	// TODO: Deprecate -resource-labels in favor of NodeFeatureRules CRD
 	for extendedResourceName := range m.args.ResourceLabels {
 		// Add possibly missing default ns
 		extendedResourceName = addNs(extendedResourceName, nfdv1alpha1.FeatureLabelNs)
@@ -449,12 +450,27 @@ func (m *nfdMaster) filterFeatureLabels(labels Labels) (Labels, ExtendedResource
 				continue // non-numeric label can't be used
 			}
 
-			extendedResources[extendedResourceName] = value
+			outExtendedResources[extendedResourceName] = value
 			delete(outLabels, extendedResourceName)
 		}
 	}
 
-	return outLabels, extendedResources
+	// via NodeFeatureRules CR
+	for _, extendedResourceName := range extendedResources {
+		// Add possibly missing default ns
+		extendedResourceName = addNs(extendedResourceName, nfdv1alpha1.FeatureLabelNs)
+		if value, ok := outLabels[extendedResourceName]; ok {
+			if _, err := strconv.Atoi(value); err != nil {
+				klog.Errorf("bad label value (%s: %s) encountered for extended resource: %s", extendedResourceName, value, err.Error())
+				continue // non-numeric label can't be used
+			}
+
+			outExtendedResources[extendedResourceName] = value
+			delete(outLabels, extendedResourceName)
+		}
+	}
+
+	return outLabels, outExtendedResources
 }
 
 func verifyNodeName(cert *x509.Certificate, nodeName string) error {
@@ -509,7 +525,6 @@ func (m *nfdMaster) SetLabels(c context.Context, r *pb.SetLabelsRequest) (*pb.Se
 		annotations := Annotations{m.instanceAnnotation(nfdv1alpha1.WorkerVersionAnnotation): r.NfdVersion}
 
 		// Create labels et al
-		// FIDENCIO: passing nil here is really the correct approach?
 		if err := m.refreshNodeFeatures(cli, r.NodeName, annotations, nil, r.GetLabels(), r.GetFeatures()); err != nil {
 			return &pb.SetLabelsReply{}, err
 		}
@@ -606,7 +621,7 @@ func (m *nfdMaster) nfdAPIUpdateOneNode(nodeName string) error {
 	return nil
 }
 
-func (m *nfdMaster) refreshNodeFeatures(cli *kubernetes.Clientset, nodeName string, annotations, extendedResources map[string]string, labels map[string]string, features *nfdv1alpha1.Features) error {
+func (m *nfdMaster) refreshNodeFeatures(cli *kubernetes.Clientset, nodeName string, annotations Annotations, extendedResources ExtendedResources, labels map[string]string, features *nfdv1alpha1.Features) error {
 	if extendedResources == nil {
 		extendedResources = make(map[string]string)
 	}
@@ -622,15 +637,13 @@ func (m *nfdMaster) refreshNodeFeatures(cli *kubernetes.Clientset, nodeName stri
 		labels[k] = v
 	}
 
-	labels, extendedResources = m.filterFeatureLabels(labels)
+	// Remove labels which are intended to be extended resources or their NS
+	// is not whitelisted
+	labels, extendedResources = m.filterFeatureLabels(labels, crExtendedResources)
 
 	var taints []corev1.Taint
 	if m.args.EnableTaints {
 		taints = crTaints
-	}
-
-	for k, v := range crExtendedResources {
-		extendedResources[k] = v
 	}
 
 	err := m.updateNodeObject(cli, nodeName, labels, annotations, extendedResources, taints)
@@ -747,12 +760,12 @@ func authorizeClient(c context.Context, checkNodeName bool, nodeName string) err
 	return nil
 }
 
-func (m *nfdMaster) processNodeFeatureRule(features *nfdv1alpha1.Features) (map[string]string, map[string]string, []corev1.Taint) {
+func (m *nfdMaster) processNodeFeatureRule(features *nfdv1alpha1.Features) ([]string, map[string]string, []corev1.Taint) {
 	if m.nfdController == nil {
 		return nil, nil, nil
 	}
 
-	extendedResources := make(map[string]string)
+	extendedResources := []string{}
 	labels := make(map[string]string)
 	var taints []corev1.Taint
 	ruleSpecs, err := m.nfdController.ruleLister.List(label.Everything())
@@ -784,9 +797,8 @@ func (m *nfdMaster) processNodeFeatureRule(features *nfdv1alpha1.Features) (map[
 			for k, v := range ruleOut.Labels {
 				labels[k] = v
 			}
-			for k, v :=range ruleOut.ExtendedResources {
-				extendedResources[k] = v
-			}
+
+			extendedResources = append(extendedResources, ruleOut.ExtendedResources...)
 
 			// Feed back rule output to features map for subsequent rules to match
 			features.InsertAttributeFeatures(nfdv1alpha1.RuleBackrefDomain, nfdv1alpha1.RuleBackrefFeature, ruleOut.Labels)

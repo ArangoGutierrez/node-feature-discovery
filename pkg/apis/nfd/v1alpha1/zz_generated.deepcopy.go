@@ -536,10 +536,8 @@ func (in *Rule) DeepCopyInto(out *Rule) {
 	}
 	if in.ExtendedResources != nil {
 		in, out := &in.ExtendedResources, &out.ExtendedResources
-		*out = make(map[string]string, len(*in))
-		for key, val := range *in {
-			(*out)[key] = val
-		}
+		*out = make([]string, len(*in))
+		copy(*out, *in)
 	}
 	if in.MatchFeatures != nil {
 		in, out := &in.MatchFeatures, &out.MatchFeatures

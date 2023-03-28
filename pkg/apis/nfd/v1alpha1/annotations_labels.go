@@ -32,6 +32,9 @@ const (
 	// AnnotationNs namespace for all NFD-related annotations.
 	AnnotationNs = "nfd.node.kubernetes.io"
 
+	// ExtendedResourceNs is the namespace for extended resources.
+	ExtendedResourceNs = "nfd.node.kubernetes.io"
+
 	// ExtendedResourceAnnotation is the annotation that holds all extended resources managed by NFD.
 	ExtendedResourceAnnotation = AnnotationNs + "/extended-resources"
 

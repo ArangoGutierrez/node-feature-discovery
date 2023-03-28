@@ -55,6 +55,8 @@ func main() {
 		switch f.Name {
 		case "featurerules-controller":
 			klog.Warningf("-featurerules-controller is deprecated, use '-crd-controller' flag instead")
+		case "resource-labels":
+			klog.Warningf("-resource-labels is deprecated, use a NodeFeatureRule CR instead")
 		}
 	})
 

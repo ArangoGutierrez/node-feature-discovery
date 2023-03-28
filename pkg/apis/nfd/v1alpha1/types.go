@@ -51,7 +51,8 @@ type NodeFeatureSpec struct {
 	// Labels is the set of node labels that are requested to be created.
 	// +optional
 	Labels map[string]string `json:"labels"`
-	// FooBar
+	// ExtendedResources is the set of extended resources that are requested to
+	// be created.
 	// +optional
 	ExtendedResources map[string]string `json:"extendedResources"`
 }
@@ -166,9 +167,9 @@ type Rule struct {
 	// +optional
 	Taints []corev1.Taint `json:"taints,omitempty"`
 
-	// FooBar
+	// ExtendedResources to create if the rule matches.
 	// +optional
-	ExtendedResources map[string]string `json:"extendedResources"`
+	ExtendedResources []string `json:"extendedResources"`
 
 	// MatchFeatures specifies a set of matcher terms all of which must match.
 	// +optional

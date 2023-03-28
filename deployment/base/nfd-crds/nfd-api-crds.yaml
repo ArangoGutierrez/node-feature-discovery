@@ -39,7 +39,8 @@ spec:
               extendedResources:
                 additionalProperties:
                   type: string
-                description: FooBar
+                description: ExtendedResources is the set of extended resources that
+                  are requested to be created.
                 type: object
               features:
                 description: Features is the full "raw" features data that has been
@@ -161,10 +162,10 @@ spec:
                     labeling.
                   properties:
                     extendedResources:
-                      additionalProperties:
+                      description: ExtendedResources to create if the rule matches.
+                      items:
                         type: string
-                      description: FooBar
-                      type: object
+                      type: array
                     labels:
                       additionalProperties:
                         type: string
