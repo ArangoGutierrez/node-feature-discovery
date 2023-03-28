@@ -475,7 +475,7 @@ details.
 labels specified in the `labels` field will override anything
 originating from `labelsTemplate`.
 
-### Taints
+#### Taints
 
 *taints* is a list of taint entries and each entry can have `key`, `value` and `effect`,
 where the `value` is optional. Effect could be `NoSchedule`, `PreferNoSchedule`
@@ -490,6 +490,42 @@ The `.vars` field is a map of values (key-value pairs) to store for subsequent
 rules to use. In other words, these are variables that are not advertised as
 node labels. See [backreferences](#backreferences) for more details on the
 usage of vars.
+
+#### Extended resources
+
+The `.extendedResources` field is a list of extended resources to advertise.
+See [extended resources](#extended-resources) for more details.
+
+Take this rule as a referential example:
+
+```yaml
+apiVersion: nfd.k8s-sigs.io/v1alpha1
+kind: NodeFeatureRule
+metadata:
+  name: my-sample-rule-object
+spec:
+  rules:
+    - name: "my sample rule"
+      extendedResources: 
+        - "cpu-security.tdx.total_keys"
+      matchFeatures:
+        - feature: cpu-security.tdx.enalbed
+          matchExpressions:
+            op: IsTrue
+```
+
+This will yield into the following node status:
+
+```yaml
+  allocatable:
+    ...
+    feature.node.kubernetes.io/cpu-security.tdx.total_keys: "31"
+    ...         
+  capacity:                                                                                   
+    ...
+    feature.node.kubernetes.io/cpu-security.tdx.total_keys: "31"
+    ...
+```
 
 #### Vars template
 
