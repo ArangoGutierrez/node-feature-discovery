@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import (
 type Interface interface {
 	// NodeFeatures returns a NodeFeatureInformer.
 	NodeFeatures() NodeFeatureInformer
+	// NodeFeatureGroups returns a NodeFeatureGroupInformer.
+	NodeFeatureGroups() NodeFeatureGroupInformer
 	// NodeFeatureRules returns a NodeFeatureRuleInformer.
 	NodeFeatureRules() NodeFeatureRuleInformer
 }
@@ -44,6 +46,11 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 // NodeFeatures returns a NodeFeatureInformer.
 func (v *version) NodeFeatures() NodeFeatureInformer {
 	return &nodeFeatureInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// NodeFeatureGroups returns a NodeFeatureGroupInformer.
+func (v *version) NodeFeatureGroups() NodeFeatureGroupInformer {
+	return &nodeFeatureGroupInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }
 
 // NodeFeatureRules returns a NodeFeatureRuleInformer.

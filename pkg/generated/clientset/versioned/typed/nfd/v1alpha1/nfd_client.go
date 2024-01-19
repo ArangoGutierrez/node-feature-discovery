@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import (
 type NfdV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	NodeFeaturesGetter
+	NodeFeatureGroupsGetter
 	NodeFeatureRulesGetter
 }
 
@@ -39,6 +40,10 @@ type NfdV1alpha1Client struct {
 
 func (c *NfdV1alpha1Client) NodeFeatures(namespace string) NodeFeatureInterface {
 	return newNodeFeatures(c, namespace)
+}
+
+func (c *NfdV1alpha1Client) NodeFeatureGroups() NodeFeatureGroupInterface {
+	return newNodeFeatureGroups(c)
 }
 
 func (c *NfdV1alpha1Client) NodeFeatureRules() NodeFeatureRuleInterface {

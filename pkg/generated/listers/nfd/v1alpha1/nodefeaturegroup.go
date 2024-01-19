@@ -25,44 +25,44 @@ import (
 	v1alpha1 "sigs.k8s.io/node-feature-discovery/pkg/apis/nfd/v1alpha1"
 )
 
-// NodeFeatureRuleLister helps list NodeFeatureRules.
+// NodeFeatureGroupLister helps list NodeFeatureGroups.
 // All objects returned here must be treated as read-only.
-type NodeFeatureRuleLister interface {
-	// List lists all NodeFeatureRules in the indexer.
+type NodeFeatureGroupLister interface {
+	// List lists all NodeFeatureGroups in the indexer.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1alpha1.NodeFeatureRule, err error)
-	// Get retrieves the NodeFeatureRule from the index for a given name.
+	List(selector labels.Selector) (ret []*v1alpha1.NodeFeatureGroup, err error)
+	// Get retrieves the NodeFeatureGroup from the index for a given name.
 	// Objects returned here must be treated as read-only.
-	Get(name string) (*v1alpha1.NodeFeatureRule, error)
-	NodeFeatureRuleListerExpansion
+	Get(name string) (*v1alpha1.NodeFeatureGroup, error)
+	NodeFeatureGroupListerExpansion
 }
 
-// nodeFeatureRuleLister implements the NodeFeatureRuleLister interface.
-type nodeFeatureRuleLister struct {
+// nodeFeatureGroupLister implements the NodeFeatureGroupLister interface.
+type nodeFeatureGroupLister struct {
 	indexer cache.Indexer
 }
 
-// NewNodeFeatureRuleLister returns a new NodeFeatureRuleLister.
-func NewNodeFeatureRuleLister(indexer cache.Indexer) NodeFeatureRuleLister {
-	return &nodeFeatureRuleLister{indexer: indexer}
+// NewNodeFeatureGroupLister returns a new NodeFeatureGroupLister.
+func NewNodeFeatureGroupLister(indexer cache.Indexer) NodeFeatureGroupLister {
+	return &nodeFeatureGroupLister{indexer: indexer}
 }
 
-// List lists all NodeFeatureRules in the indexer.
-func (s *nodeFeatureRuleLister) List(selector labels.Selector) (ret []*v1alpha1.NodeFeatureRule, err error) {
+// List lists all NodeFeatureGroups in the indexer.
+func (s *nodeFeatureGroupLister) List(selector labels.Selector) (ret []*v1alpha1.NodeFeatureGroup, err error) {
 	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.NodeFeatureRule))
+		ret = append(ret, m.(*v1alpha1.NodeFeatureGroup))
 	})
 	return ret, err
 }
 
-// Get retrieves the NodeFeatureRule from the index for a given name.
-func (s *nodeFeatureRuleLister) Get(name string) (*v1alpha1.NodeFeatureRule, error) {
+// Get retrieves the NodeFeatureGroup from the index for a given name.
+func (s *nodeFeatureGroupLister) Get(name string) (*v1alpha1.NodeFeatureGroup, error) {
 	obj, exists, err := s.indexer.GetByKey(name)
 	if err != nil {
 		return nil, err
 	}
 	if !exists {
-		return nil, errors.NewNotFound(v1alpha1.Resource("nodefeaturerule"), name)
+		return nil, errors.NewNotFound(v1alpha1.Resource("nodefeaturegroup"), name)
 	}
-	return obj.(*v1alpha1.NodeFeatureRule), nil
+	return obj.(*v1alpha1.NodeFeatureGroup), nil
 }

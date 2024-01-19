@@ -63,6 +63,9 @@ const (
 	// FeatureAnnotationsTrackingAnnotation is the annotation that holds all feature annotations that nfd-master set on the node
 	FeatureAnnotationsTrackingAnnotation = AnnotationNs + "/feature-annotations"
 
+	// FeatureGroupObjLabel is the label that specifies current cluster name
+	FeatureGroupObjLabel = "nfd.node.kubernetes.io/feature-group"
+
 	// NodeFeatureObjNodeNameLabel is the label that specifies which node the
 	// NodeFeature object is targeting. Creators of NodeFeature objects must
 	// set this label and consumers of the objects are supposed to use the

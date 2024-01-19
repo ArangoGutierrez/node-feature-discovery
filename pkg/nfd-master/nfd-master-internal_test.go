@@ -77,9 +77,11 @@ func mockNodeList() *corev1.NodeList {
 
 func newMockNfdAPIController(client *fake.Clientset) *nfdController {
 	c := &nfdController{
-		stopChan:           make(chan struct{}, 1),
-		updateAllNodesChan: make(chan struct{}, 1),
-		updateOneNodeChan:  make(chan string),
+		stopChan:                       make(chan struct{}, 1),
+		updateAllNodesChan:             make(chan struct{}, 1),
+		updateOneNodeChan:              make(chan string),
+		updateNodeFeatureGroupChan:     make(chan string),
+		updateAllNodeFeatureGroupsChan: make(chan struct{}, 1),
 	}
 
 	informerFactory := nfdinformers.NewSharedInformerFactory(client, 1*time.Hour)

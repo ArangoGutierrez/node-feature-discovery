@@ -245,3 +245,37 @@ func init() {
 	// Register k8s scheme to be able to create CRDs
 	_ = apiextensionsv1.AddToScheme(scheme.Scheme)
 }
+
+// CreateNodeFeatureGroupRuleFromFile creates a NodeFeatureGroupRule object from a given file located under test data directory.
+func CreateNodeFeatureGroupRulesFromFile(ctx context.Context, cli nfdclientset.Interface, filename string) error {
+	objs, err := nodeFeatureGroupsFromFile(filepath.Join(packagePath, "..", "data", filename))
+	if err != nil {
+		return err
+	}
+
+	for _, obj := range objs {
+		if _, err = cli.NfdV1alpha1().NodeFeatureGroups().Create(ctx, obj, metav1.CreateOptions{}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func nodeFeatureGroupsFromFile(path string) ([]*nfdv1alpha1.NodeFeatureGroup, error) {
+	objs, err := apiObjsFromFile(path, nfdscheme.Codecs.UniversalDeserializer())
+	if err != nil {
+		return nil, err
+	}
+
+	crs := make([]*nfdv1alpha1.NodeFeatureGroup, len(objs))
+
+	for i, obj := range objs {
+		var ok bool
+		crs[i], ok = obj.(*nfdv1alpha1.NodeFeatureGroup)
+		if !ok {
+			return nil, fmt.Errorf("unexpected type %t when reading %q", obj, path)
+		}
+	}
+
+	return crs, nil
+}

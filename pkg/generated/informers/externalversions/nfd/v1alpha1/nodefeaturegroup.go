@@ -32,59 +32,58 @@ import (
 	v1alpha1 "sigs.k8s.io/node-feature-discovery/pkg/generated/listers/nfd/v1alpha1"
 )
 
-// NodeFeatureInformer provides access to a shared informer and lister for
-// NodeFeatures.
-type NodeFeatureInformer interface {
+// NodeFeatureGroupInformer provides access to a shared informer and lister for
+// NodeFeatureGroups.
+type NodeFeatureGroupInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.NodeFeatureLister
+	Lister() v1alpha1.NodeFeatureGroupLister
 }
 
-type nodeFeatureInformer struct {
+type nodeFeatureGroupInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
-	namespace        string
 }
 
-// NewNodeFeatureInformer constructs a new informer for NodeFeature type.
+// NewNodeFeatureGroupInformer constructs a new informer for NodeFeatureGroup type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewNodeFeatureInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredNodeFeatureInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewNodeFeatureGroupInformer(client versioned.Interface, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredNodeFeatureGroupInformer(client, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredNodeFeatureInformer constructs a new informer for NodeFeature type.
+// NewFilteredNodeFeatureGroupInformer constructs a new informer for NodeFeatureGroup type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredNodeFeatureInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredNodeFeatureGroupInformer(client versioned.Interface, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.NfdV1alpha1().NodeFeatures(namespace).List(context.TODO(), options)
+				return client.NfdV1alpha1().NodeFeatureGroups().List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.NfdV1alpha1().NodeFeatures(namespace).Watch(context.TODO(), options)
+				return client.NfdV1alpha1().NodeFeatureGroups().Watch(context.TODO(), options)
 			},
 		},
-		&nfdv1alpha1.NodeFeature{},
+		&nfdv1alpha1.NodeFeatureGroup{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *nodeFeatureInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredNodeFeatureInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *nodeFeatureGroupInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredNodeFeatureGroupInformer(client, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *nodeFeatureInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&nfdv1alpha1.NodeFeature{}, f.defaultInformer)
+func (f *nodeFeatureGroupInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&nfdv1alpha1.NodeFeatureGroup{}, f.defaultInformer)
 }
 
-func (f *nodeFeatureInformer) Lister() v1alpha1.NodeFeatureLister {
-	return v1alpha1.NewNodeFeatureLister(f.Informer().GetIndexer())
+func (f *nodeFeatureGroupInformer) Lister() v1alpha1.NodeFeatureGroupLister {
+	return v1alpha1.NewNodeFeatureGroupLister(f.Informer().GetIndexer())
 }

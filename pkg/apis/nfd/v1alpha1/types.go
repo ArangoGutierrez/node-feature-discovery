@@ -287,3 +287,65 @@ const (
 // MatchAllNames is a special key in MatchExpressionSet to use field names
 // (keys from the input) instead of values when matching.
 const MatchAllNames = "*"
+
+// NodeFeatureGroup resource holds Node pools by featureGroup
+// +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster,shortName=nfg
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +genclient
+// +genclient:nonNamespaced
+type NodeFeatureGroup struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   NodeFeatureGroupSpec   `json:"spec"`
+	Status NodeFeatureGroupStatus `json:"status,omitempty"`
+}
+
+// NodeFeatureGroupSpec describes a NodeFeatureGroup object.
+type NodeFeatureGroupSpec struct {
+	FeatureGroupRules []GroupRule `json:"featureGroupRules"`
+}
+
+type NodeFeatureGroupStatus struct {
+	// Nodes is a list of nodes in the cluster that match the featureGroupRules
+	// +optional
+	Nodes []string `json:"nodes"`
+}
+
+// NodeFeatureGroupList contains a list of NodeFeatureGroup objects.
+// +kubebuilder:object:root=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type NodeFeatureGroupList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata"`
+
+	Items []NodeFeatureGroup `json:"spec"`
+}
+
+// GroupRule defines a rule for nodegroup filtering.
+type GroupRule struct {
+	// Name of the rule.
+	Name string `json:"name"`
+
+	// Vars is the variables to store if the rule matches. Variables do not
+	// directly inflict any changes in the node object. However, they can be
+	// referenced from other rules enabling more complex rule hierarchies,
+	// without exposing intermediary output values as labels.
+	// +optional
+	Vars map[string]string `json:"vars"`
+
+	// VarsTemplate specifies a template to expand for dynamically generating
+	// multiple variables. Data (after template expansion) must be keys with an
+	// optional value (<key>[=<value>]) separated by newlines.
+	// +optional
+	VarsTemplate string `json:"varsTemplate"`
+
+	// MatchFeatures specifies a set of matcher terms all of which must match.
+	// +optional
+	MatchFeatures FeatureMatcher `json:"matchFeatures"`
+
+	// MatchAny specifies a list of matchers one of which must match.
+	// +optional
+	MatchAny []MatchAnyElem `json:"matchAny"`
+}

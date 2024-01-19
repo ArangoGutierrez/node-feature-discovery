@@ -3,37 +3,48 @@ kind: ClusterRole
 metadata:
   name: nfd-master
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - nodes
-  - nodes/status
-  verbs:
-  - get
-  - patch
-  - update
-  - list
-- apiGroups:
-  - nfd.k8s-sigs.io
-  resources:
-  - nodefeatures
-  - nodefeaturerules
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - coordination.k8s.io
-  resources:
-  - leases
-  verbs:
-  - create
-- apiGroups:
-  - coordination.k8s.io
-  resources:
-  - leases
-  resourceNames:
-  - "nfd-master.nfd.kubernetes.io"
-  verbs:
-  - get
-  - update
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+      - nodes/status
+    verbs:
+      - get
+      - patch
+      - update
+      - list
+  - apiGroups:
+      - nfd.k8s-sigs.io
+    resources:
+      - nodefeatures
+      - nodefeaturerules
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - create
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    resourceNames:
+      - "nfd-master.nfd.kubernetes.io"
+    verbs:
+      - get
+      - update
+  - apiGroups:
+      - nfd.k8s-sigs.io
+    resources:
+      - nodefeaturegroups
+      - nodefeaturegrouprules
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+      - create
